@@ -25,6 +25,11 @@ from resumes.views import (ResumeViewSet, ProjectViewSet, ExperienceViewSet,
                            EducationViewSet, SkillViewSet, AchievementViewSet)
 from users.views import RegisterAPIView, MeAPIView
 
+from resumes.views import (ResumeViewSet, ProjectViewSet, ExperienceViewSet,
+                           EducationViewSet, SkillViewSet, AchievementViewSet,
+                           IntegrationWebhookAPIView)
+
+
 router = routers.DefaultRouter()
 router.register(r'resumes', ResumeViewSet, basename='resume')
 router.register(r'projects', ProjectViewSet, basename='project')
@@ -46,4 +51,7 @@ urlpatterns = [
     # API schema / docs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # webhook integrations endpoint
+    path('api/integrations/webhook/', IntegrationWebhookAPIView.as_view(), name='integration-webhook'),
+
 ]
