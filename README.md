@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Resume System Backend
 
 Small Django + DRF service to manage user resumes, projects, experiences, skills and achievements.
@@ -15,3 +16,6 @@ Includes:
    ```bash
    docker-compose build
    docker-compose up -d
+=======
+# resume-system-backend
+>>>>>>> a9be3644c473c76314aa7fe448a93b8127f9839e
