@@ -28,6 +28,10 @@ from users.views import RegisterAPIView, MeAPIView
 from resumes.views import (ResumeViewSet, ProjectViewSet, ExperienceViewSet,
                            EducationViewSet, SkillViewSet, AchievementViewSet,
                            IntegrationWebhookAPIView)
+from resumes.views import (
+                           ResumeViewSet, ProjectViewSet, ExperienceViewSet,
+                           EducationViewSet, SkillViewSet, AchievementViewSet,
+                           IntegrationWebhookAPIView, resume_pdf_view)
 
 
 router = routers.DefaultRouter()
@@ -53,5 +57,6 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     # webhook integrations endpoint
     path('api/integrations/webhook/', IntegrationWebhookAPIView.as_view(), name='integration-webhook'),
+    path('api/resumes/<int:pk>/export_pdf/', resume_pdf_view, name='resume-export-pdf'),
 
 ]

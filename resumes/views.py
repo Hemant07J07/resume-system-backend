@@ -4,14 +4,21 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied, ParseError, NotFound
+from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.http import HttpResponse
 
 from .models import Resume, Project, Experience, Education, Skill, Achievement
 from .serializers import (ResumeSerializer, ProjectSerializer,
                           ExperienceSerializer, EducationSerializer,
                           SkillSerializer, AchievementSerializer)
 from .permissions import IsOwnerOrReadOnly
+
+# PDF generation
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
 
 # optional OpenAI usage
 OPENAI_AVAILABLE = False
@@ -150,8 +157,6 @@ class AchievementViewSet(BaseChildViewSet):
 #
 # Webhook integration endpoint
 #
-from rest_framework.views import APIView
-
 class IntegrationWebhookAPIView(APIView):
     """
     POST /api/integrations/webhook/
@@ -227,3 +232,61 @@ class IntegrationWebhookAPIView(APIView):
             )
             serializer = AchievementSerializer(ach)
             return Response({'status': 'ok', 'created': 'achievement_fallback', 'item': serializer.data}, status=status.HTTP_201_CREATED)
+
+
+#
+# Simple PDF export view
+#
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def resume_pdf_view(request, pk):
+    """
+    Return a simple PDF of the resume with basic fields.
+    GET /api/resumes/{id}/export_pdf/
+    """
+    resume = get_object_or_404(Resume, pk=pk, owner=request.user)
+
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    y = height - 50
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(40, y, resume.title)
+    y -= 25
+    p.setFont("Helvetica", 12)
+    p.drawString(40, y, f"Owner: {request.user.get_full_name() or request.user.username}")
+    y -= 25
+
+    if resume.summary_text:
+        p.setFont("Helvetica-Oblique", 11)
+        p.drawString(40, y, "Summary:")
+        y -= 18
+        text = p.beginText(40, y)
+        text.setFont("Helvetica", 10)
+        for line in resume.summary_text.splitlines():
+            text.textLine(line)
+            y -= 14
+        p.drawText(text)
+        y = text.getY() - 10
+
+    # Projects
+    projs = resume.projects.all()[:6]
+    if projs:
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(40, y, "Projects:")
+        y -= 18
+        p.setFont("Helvetica", 10)
+        for pr in projs:
+            p.drawString(50, y, f"- {pr.title} ({pr.tech_stack})")
+            y -= 14
+            if y < 80:
+                p.showPage()
+                y = height - 50
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    return HttpResponse(buffer, content_type='application/pdf', headers={
+        'Content-Disposition': f'attachment; filename=resume_{resume.id}.pdf'
+    })
