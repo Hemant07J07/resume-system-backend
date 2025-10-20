@@ -37,7 +37,36 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # third party 
+    'rest_framework',
+    'drf_spectacular',
+
+    # local apps
+    'users',
+    'resumes',
 ]
+# use a custom user model (we'll create it)
+AUTH_USER_MODEL = 'users.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES' : (
+        'rest_framework.authentication.SessionAuthentication',
+
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+# drf-spectacular 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Resume System API',
+    'DESCRIPTION': 'API for resume management (intern task)',
+    'VERSION': '1.0.0',
+    
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
