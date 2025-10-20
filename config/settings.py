@@ -65,7 +65,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Resume System API',
     'DESCRIPTION': 'API for resume management (intern task)',
     'VERSION': '1.0.0',
-    
+
 }
 
 MIDDLEWARE = [
